@@ -14,6 +14,7 @@ import hashlib
 import logging
 import os
 import random
+import requests
 try:
     import json
 except ImportError:
@@ -66,12 +67,13 @@ class PiwikTracker(object):
         """
         random.seed()
         self.request = request
-        self.host = self.request.META.get('SERVER_NAME', '')
-        self.script = self.request.META.get('PATH_INFO', '')
-        self.query_string = self.request.META.get('QUERY_STRING', '')
+        self.host = self.request.headers['SERVER_NAME']
+        self.script = self.request.headers['PATH_INFO']
+        self.query_string = self.request.headers['QUERY_STRING']
         self.id_site = id_site
         self.api_url = ''
-        self.request_cookie = ''
+        self.request_cookie = []
+        self.response_cookies = None
         self.ip = False
         self.token_auth = False
         self.__set_request_parameters()
@@ -98,11 +100,10 @@ class PiwikTracker(object):
 
         :rtype: None
         """
-        self.user_agent = self.request.META.get('HTTP_USER_AGENT', '')
-        self.referer = self.request.META.get('HTTP_REFERER', '')
+        self.user_agent = self.request.headers['HTTP_USER_AGENT']
+        self.referer = self.request.headers['HTTP_REFERER']
         #self.ip = self.request.META.get('REMOTE_ADDR')
-        self.accept_language = self.request.META.get('HTTP_ACCEPT_LANGUAGE',
-                                                     '')
+        self.accept_language = self.request.headers['HTTP_ACCEPT_LANGUAGE']
 
     def set_local_time(self, datetime):
         """
@@ -286,15 +287,18 @@ class PiwikTracker(object):
         """
         self.forced_datetime = datetime
 
-    def __set_request_cookie(self, cookie):
+    def __add_cookie(self, cookie, content):
         """
-        Set the request cookie, for testing purposes
+        Set the request cookie. Must be in key, value pair
 
-        :param cookie: Request cookie
+        :param cookie: Cookie name or identifier
         :type cookie: str
+        :param content: Value or content of cookie
+        :type content: str
         :rtype: None
         """
-        self.request_cookie = cookie
+        self.request_cookie[cookie] = content
+
 
     def _set_host(self, host):
         """
@@ -336,7 +340,7 @@ class PiwikTracker(object):
         :rtype: str
         """
         # django-specific
-        if self.request.is_secure():
+        if self.request.url.startswith('https:'):
             scheme = 'https'
         else:
             scheme = 'http'
@@ -527,15 +531,10 @@ class PiwikTracker(object):
         :type name: str
         :rtype: str
         """
+        # TODO: Remove this method, use self.response_cookies['cookie_name']
+        # directly
         logging.warn(self.UNSUPPORTED_WARNING % '__get_cookie_matching_name()')
-        cookie_value = False
-        if self.request.COOKIES:
-            for name in self.request.COOKIES:
-                #print 'cookie name', name
-                #print 'cookie is', cookie_value
-                cookie_value = self.request.COOKIES[name]
-        #print self.request.COOKIES
-        return cookie_value
+        return self.response_cookies[name]
 
     def get_visitor_id(self):
         """
@@ -560,7 +559,7 @@ class PiwikTracker(object):
         else:
             logging.warn(self.UNSUPPORTED_WARNING % 'get_visitor_id()')
             id_cookie_name = 'id.%s.' % self.id_site
-            id_cookie = self.__get_cookie_matching_name(id_cookie_name)
+            id_cookie = self.response_cookies[id_cookie_name]
             visitor_id = self.visitor_id
             if id_cookie:
                 #print 'id_cookie is', id_cookie
@@ -589,7 +588,7 @@ class PiwikTracker(object):
         """
         logging.warn(self.UNSUPPORTED_WARNING % 'get_attribution_info()')
         attribution_cookie_name = 'ref.%d.' % self.id_site
-        return self.__get_cookie_matching_name(attribution_cookie_name)
+        return self.response_cookies[attribution_cookie_name]
 
     def __get_random_string(self, length=500):
         """
@@ -725,30 +724,21 @@ class PiwikTracker(object):
         parsed = urlparse(self.api_url)
         url = "%s://%s%s?%s" % (parsed.scheme, parsed.netloc, parsed.path, url)
         request = Request(url)
-        request.add_header('User-Agent', self.user_agent)
-        request.add_header('Accept-Language', self.accept_language)
-        if not self.cookie_support:
-            self.request_cookie = ''
-        elif self.request_cookie != '':
-            #print 'Adding cookie', self.request_cookie
-            request.add_header('Cookie', self.request_cookie)
+        headers = {
+                    'Accept-Language': self.accept_language,
+                    'User-Agent': self.user_agent,
+                    }
+        if self.cookie_support:
+            # something
+        else:
+            cookies = None
+        response = requests.get(url, headers=headers, cookies=cookies)
+        self.response_cookies = response.cookies
+        # TODO : Handle error HTTP codes
+        # Note: No need to handle cookies in response. They are accessible in
+        # self.request
+        return response.text
 
-        response = urlopen(request)
-        #print response.info()
-        body = response.read()
-        # The cookie in the response will be set in the next request
-        #for header, value in response.getheaders():
-        #    # TODO handle cookies
-        #    # set cookie to la
-        #	# in case several cookies returned, we keep only the latest one
-        #    # (ie. XDEBUG puts its cookie first in the list)
-        #    #print header, value
-        #    self.request_cookie = ''
-
-        # Work around urllib updates, we need a string
-        if sys.version_info[0] >= 3 and type(body) == bytes:
-            body = str(body)
-        return body
 
     def set_custom_variable(self, id, name, value, scope='visit'):
         """
@@ -836,7 +826,7 @@ class PiwikTracker(object):
                              'get_custom_variable()')
                 # TODO test this code...
                 custom_vars_cookie = 'cvar.%d.' % self.id_site
-                cookie = self.__get_cookie_matching_name(custom_vars_cookie)
+                cookie = self.response.cookies[custom_vars_cookie]
                 if not cookie:
                     r = False
                 else:
