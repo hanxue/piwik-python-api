@@ -49,15 +49,15 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'piwikapi'
-copyright = u'2012-2013, Nicolas Kuttler'
+project = u'piwikapi-drred'
+copyright = u'2012-2013, Nicolas Kuttler. 2017, DrRed'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '0.3'
+version = '0.3.1-drred'
 # The full version, including alpha/beta/rc tags.
 release = version
 

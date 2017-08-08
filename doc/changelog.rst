@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.3.1-drred (2017-08-08)
+----------------
+- Variable tracking support
+- Custom dimensions support
+- Events support
+- Site Search support
+- Content tracking support
+- User ID tracking support
+
 0.3 (2013-02-20)
 ----------------
 - Python 3.2 support
