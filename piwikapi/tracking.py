@@ -194,7 +194,7 @@ class PiwikTracker(object):
     def set_visitor_id(self, visitor_id):
         """
         Set the visitor's unique User ID. See https://piwik.org/docs/user-id/
-        
+
         :param visitor_id: Visitor I
         :type visitor_id: str
         :raises: InvalidParameter if the visitor_id has an incorrect length
@@ -456,11 +456,11 @@ class PiwikTracker(object):
 
     def __get_url_track_variable(self, category, action, name, value):
         url = self._get_request(self.id_site)
-	params = {}
-	params['e_c'] = category
-	params['e_a'] = action
-	params['e_n'] = name
-	params['e_v' ] = value
+        params = {}
+        params['e_c'] = category
+        params['e_a'] = action
+        params['e_n'] = name
+        params['e_v' ] = value
         url += '&%s' % urlencode(params)
         return url
 
@@ -633,8 +633,8 @@ class PiwikTracker(object):
         return self._send_request(url)
 
     def do_track_variable(self, category, action, name, value):
-	url = self.__get_url_track_variable(category, action, name, value)
-	return self._send_request(url)
+        url = self.__get_url_track_variable(category, action, name, value)
+        return self._send_request(url)
 
     def do_track_action(self, action_url, action_type):
         """
