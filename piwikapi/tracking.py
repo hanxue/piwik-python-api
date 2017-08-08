@@ -8,8 +8,9 @@ Source and development at https://github.com/piwik/piwik-python-api
 """
 
 import sys
+import string
 import datetime
-from hashlib import md5
+import hashlib
 import logging
 import os
 import random
@@ -594,11 +595,11 @@ class PiwikTracker(object):
         """
         Return a random string
 
-        :param length: Length
-        :type length: inte
+        :param length: Length of string
+        :type length: int
         :rtype: str
         """
-        return md5(os.urandom(length)).hexdigest()
+        return ''.join(random.SystemRandom().choice(string.printable) for _ in range(length))
 
     def get_random_visitor_id(self):
         """

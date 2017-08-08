@@ -6,7 +6,9 @@ try:
     import unittest2 as unittest
 except ImportError:
     import unittest
-from hashlib import md5
+import string
+import hashlib
+import random
 
 
 on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
@@ -52,7 +54,7 @@ class PiwikAPITestCase(unittest.TestCase):
         :type length: inte
         :rtype: str
         """
-        return md5(os.urandom(500)).hexdigest()
+        return ''.join(random.SystemRandom().choice(string.printable) for _ in range(500))
 
     def get_unique_string(self, length=20):
         epoch = str(time.time())
