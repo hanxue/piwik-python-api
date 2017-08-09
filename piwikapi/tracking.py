@@ -86,7 +86,7 @@ class PiwikTracker(object):
         self.uid = False
         self.visitor_id = self.get_random_visitor_id()
         self.forced_visitor_id = False
-        self.debug_append_url = False
+        self.debug_append_dict = {}
         self.page_custom_var = {}
         self.visitor_custom_var = {}
         self.dimensions = {}
@@ -214,13 +214,13 @@ class PiwikTracker(object):
         """
         self.uid = uid
 
-    def set_debug_string_append(self, string):
+    def append_debug_dict(self, debug_dict):
         """
-        :param string: str to append
-        :type string: str
+        :param dict: Dictionary to add to URL parameters
+        :type string: dict
         :rtype: None
         """
-        self.debug_append_url = string
+        self.debug_append_dict = debug_dict
 
     def set_url_referer(self, referer):
         """
@@ -440,8 +440,7 @@ class PiwikTracker(object):
                 query_vars[var] = quote(self.attribution_info[i])
 
         url = urlencode(query_vars)
-        if self.debug_append_url:
-            url += self.debug_append_url
+        query_vars.update(self.debug_append_dict)
         return url
 
     def __get_url_track_page_view(self, document_title=''):
