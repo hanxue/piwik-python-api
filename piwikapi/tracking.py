@@ -18,13 +18,6 @@ try:
     import json
 except ImportError:
     import simplejson as json
-try:
-    from urllib.request import Request, urlopen
-    from urllib.parse import urlencode, urlparse, quote
-except ImportError:
-    from urllib2 import Request, urlopen
-    from urllib import urlencode, quote
-    from urlparse import urlparse
 
 from .exceptions import ConfigurationError
 from .exceptions import InvalidParameter
@@ -60,8 +53,8 @@ class PiwikTracker(object):
         """
         :param id_site: Site ID
         :type id_site: int
-        :param request: Request
-        :type request: A Django-like request object
+        :param request: Request object
+        :type request: Python Requests Request object
         :rtype: None
         """
         random.seed()
@@ -71,7 +64,7 @@ class PiwikTracker(object):
         self.query_string = self.request.headers['QUERY_STRING']
         self.id_site = id_site
         self.api_url = ''
-        self.request_cookie = []
+        self.request_cookie = {}
         self.response_cookies = None
         self.ip = False
         self.token_auth = False
@@ -268,6 +261,7 @@ class PiwikTracker(object):
             raise InvalidParameter("set_attribution_info() is expecting a "
                                    "JSON encoded string, that contains a list "
                                    "with four items, %s given" % json_encoded)
+        # TODO: Further validation for the keys
         self.attribution_info = decoded
 
     def set_force_visit_date_time(self, datetime):
@@ -394,11 +388,11 @@ class PiwikTracker(object):
 
     def _get_request(self, id_site):
         """
-        This oddly named method returns the query var string.
+        Returns the query string parameters as a dictionary
 
         :param id_site: Site ID
         :type id_site: int
-        :rtype: str
+        :rtype: dict
         """
         query_vars = {
             'idsite': id_site,
@@ -437,11 +431,10 @@ class PiwikTracker(object):
                 2: '_refts',
                 3: '_ref',
             }.items():
-                query_vars[var] = quote(self.attribution_info[i])
+                query_vars[var] = self.attribution_info[i]
 
-        url = urlencode(query_vars)
         query_vars.update(self.debug_append_dict)
-        return url
+        return query_vars
 
     def __get_url_track_page_view(self, document_title=''):
         """
@@ -450,22 +443,20 @@ class PiwikTracker(object):
 
         :param document_title: The title of the page the user is on
         :type document_title: str
-        :rtype: str
+        :rtype: dict
         """
-        url = self._get_request(self.id_site)
-        if document_title:
-            url += '&%s' % urlencode({'action_name': document_title})
-        return url
+        params = self._get_request(self.id_site)
+        return params.update({'action_name': document_title})
 
     def __get_url_track_variable(self, category, action, name, value):
-        url = self._get_request(self.id_site)
-        params = {}
-        params['e_c'] = category
-        params['e_a'] = action
-        params['e_n'] = name
-        params['e_v' ] = value
-        url += '&%s' % urlencode(params)
-        return url
+        params = self._get_request(self.id_site)
+        params.update({
+                        'e_c': category,
+                        'e_a': action,
+                        'e_n': name,
+                        'e_v': value,
+                    })
+        return params
 
 
     def __get_url_track_action(self, action_url, action_type):
@@ -475,9 +466,9 @@ class PiwikTracker(object):
         :param action_type: Type of the action, either 'download' or 'link'
         :type action_type: str
         """
-        url = self._get_request(self.id_site)
-        url += "&%s" % urlencode({action_type: action_url})
-        return url
+        params = self._get_request(self.id_site)
+        params.update({action_type: action_url})
+        return params
 
     def __get_url_track_site_search(self, search, search_cat, search_count):
         """
@@ -485,38 +476,40 @@ class PiwikTracker(object):
         :type search: str
         :param search_cat: optional search category
         :type search_cat: str
-        :param search_count: umber of search results displayed in the page. If 
+        :param search_count: Number of search results displayed in the page. If 
         search_count=0, the request will appear in "No Result Search Keyword"
         :type search_count: int
         :rtype: None
         """
-        url = self._get_request(self.id_site)
-        url += "&%s" % urlencode({'search': search})
+        params = self._get_request(self.id_site)
+        params.update({'search': search})
         if name:
-            url += "&%s" % urlencode({'search_cat': search_cat})
+            params.update({'search_cat': search_cat})
         if value:
-            url += "&%s" % urlencode({'search_count': search_count})
-        return url
+            params.update({'search_count': search_count})
+        return params
 
     def __get_url_track_event(self, category, action, name, value):
-        url = self._get_request(self.id_site)
-        url += "&%s" % urlencode({'e_c': category})
-        url += "&%s" % urlencode({'e_a': action})
+        params = self._get_request(self.id_site)
+        params.update({
+                        'e_c': category,
+                        'e_a': action,
+                        })
         if name:
-            url += "&%s" % urlencode({'e_n': name})
+            params.update({'e_n': name})
         if value:
-            url += "&%s" % urlencode({'e_v': value})
-        return url
+            params.update({'e_v': value})
+        return params
 
     def __get_url_track_content(self, content_name, content_piece, content_target, content_interaction):
-        url = self._get_request(self.id_site)
-        url += "&%s" % urlencode({'c_n': content_name})
+        params = self._get_request(self.id_site)
+        params.update({'c_n': content_name})
         if content_piece:
-            url += "&%s" % urlencode({'c_p': content_piece})
+            params.update({'c_p': content_piece})
         if name:
-            url += "&%s" % urlencode({'c_t': content_target})
+            params.update({'c_t': content_target})
         if value:
-            url += "&%s" % urlencode({'c_i': content_interaction})
+            params.update({'c_i': content_interaction})
         return url
 
     def __get_cookie_matching_name(self, name):
@@ -708,34 +701,32 @@ class PiwikTracker(object):
         url = self.__get_url_track_event(category, action, name, value)
         return self._send_request(url)
 
-    def _send_request(self, url):
+    def _send_request(self, params):
         """
         Make the tracking API request, return the request body
 
-        :param url: TODO
-        :type url: str
+        :param params: List of parameters in dictionary. 
+        :type params: dict
         :raises: ConfigurationError if the API URL was not set
         :rtype: str
         """
         if not self.api_url:
             raise ConfigurationError('API URL not set')
-        parsed = urlparse(self.api_url)
-        url = "%s://%s%s?%s" % (parsed.scheme, parsed.netloc, parsed.path, url)
-        request = Request(url)
+        request = Request(self.api_url, params=params)
         headers = {
                     'Accept-Language', self.accept_language,
                     'User-Agent', self.user_agent,
                     'Accept-Language', self.accept_language,
                     }
         if self.cookie_support:
-            # something
+            pass
         else:
             cookies = None
-        response = requests.get(url, headers=headers, cookies=cookies)
-        self.response_cookies = response.cookies
-        # TODO : Handle error HTTP codes
+        response = requests.get(self.api_url, params=params, headers=headers, cookies=cookies)
         # Note: No need to handle cookies in response. They are accessible in
         # self.request
+        self.response_cookies = response.cookies
+        # TODO : Handle error HTTP codes
         return response.text
 
 
@@ -879,13 +870,13 @@ class PiwikTrackerEcommerce(PiwikTracker):
         :type shipping: float or None
         :param discount: Discount for this order
         :type discount: float or None
-        :rtype: str
+        :rtype: dict
         """
-        url = self.__get_url_track_ecommerce(grand_total, sub_total, tax,
+        params = self.__get_url_track_ecommerce(grand_total, sub_total, tax,
                                            shipping, discount)
-        url += '&%s' % urlencode({'ec_id': order_id})
+        params.update({'ec_id': order_id})
         self.ecommerce_last_order_timestamp = self._get_timestamp()
-        return url
+        return params
 
     def __get_url_track_goal(self, id_goal, revenue=False):
         """
@@ -896,13 +887,11 @@ class PiwikTrackerEcommerce(PiwikTracker):
         :param revenue: Revenue for this conversion
         :type revenue: int (TODO why int here and not float!?)
         """
-        url = self._get_request(self.id_site)
-        params = {}
-        params['idgoal'] = id_goal
+        params = self._get_request(self.id_site)
+        params.update({'idgoal': id_goal})
         if revenue:
-            params['revenue'] = revenue
-        url += '&%s' % urlencode(params)
-        return url
+            params.update({'revenue': revenue})
+        return params
 
     def __get_url_track_ecommerce(self, grand_total, sub_total=False,
                                   tax=False, shipping=False, discount=False):
@@ -927,26 +916,24 @@ class PiwikTrackerEcommerce(PiwikTracker):
         :rtype: str
         """
         # FIXME fix what?
-        url = self._get_request(self.id_site)
-        args = {
-            'idgoal': 0,
-        }
-        args['revenue'] = grand_total
+        params = self._get_request(self.id_site)
+        params.update({
+                        'idgoal': 0,
+                        'revenue': grand_total,
+                        })
         if sub_total:
-            args['ec_st'] = sub_total
+            params.update({'ec_st': sub_total})
         if tax:
-            args['ec_tx'] = tax
+            params.update({'ec_tx': tax})
         if shipping:
-            args['ec_sh'] = shipping
+            params.update({'ec_sh': shipping})
         if discount:
-            args['ec_dt'] = discount
-        if len(self.ecommerce_items):
+            params.update({'ec_dt': discount})
+        if self.ecommerce_items:
             # Remove the SKU index in the list before JSON encoding
-            items = list(self.ecommerce_items.values())
-            args['ec_items'] = json.dumps(items)
+            params['ec_items'] = self.ecommerce_items
         self.ecommerce_items.clear()
-        url += '&%s' % urlencode(args)
-        return url
+        return params
 
     def __get_url_track_ecommerce_cart_update(self, grand_total):
         """
