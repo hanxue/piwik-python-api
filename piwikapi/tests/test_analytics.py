@@ -17,6 +17,7 @@ class AnalyticsBaseTestCase(PiwikAPITestCase):
         """
         super(AnalyticsBaseTestCase, self).setUp()
         self.a = PiwikAnalytics()
+        self.a.enable_request_debug()
         self.a.set_api_url(self.settings['PIWIK_ANALYTICS_API_URL'])
         self.a.set_id_site(self.settings['PIWIK_SITE_ID'])
         self.a.set_format('json')
@@ -31,6 +32,7 @@ class AnalyticsClassTestCase(PiwikAPITestCase):
     def test_missing_api_url(self):
         try:
             a = PiwikAnalytics()
+            a.enable_request_debug()
             r = json.loads(a.send_request())
             invalid_config = True
         except ConfigurationError:

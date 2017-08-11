@@ -12,6 +12,12 @@ import string
 import datetime
 import hashlib
 import logging
+try:
+    import http.client as http_client
+except ImportError:
+    # Python 2
+    import httplib as http_client
+http_client.HTTPConnection.debuglevel = 1
 import os
 import random
 import requests
@@ -86,6 +92,21 @@ class PiwikTracker(object):
         self.dimensions = {}
         self.plugins = {}
         self.attribution_info = {}
+        self.request_debug = False
+
+    def enable_request_debug(self):
+        """
+        Enable detailed logging from Python Requests
+        :rtype: None
+        """
+        self.request_debug = True
+
+    def disable_request_debug(self):
+        """
+        Disable detailed logging from Python Requests
+        :rtype: None
+        """
+        self.request_debug = False
 
     def __set_request_parameters(self):
         """
@@ -722,7 +743,14 @@ class PiwikTracker(object):
             pass
         else:
             cookies = None
-        response = requests.get(self.api_url, params=params, headers=headers, cookies=cookies)
+        #TODO: Reimplement cookies support
+        if self.request_debug:
+            logging.basicConfig()
+            logging.getLogger().setLevel(logging.DEBUG)
+            requests_log = logging.getLogger("requests.packages.urllib3")
+            requests_log.setLevel(logging.DEBUG)
+            requests_log.propagate = True
+        response = requests.get(self.api_url, params=params, headers=headers)
         # Note: No need to handle cookies in response. They are accessible in
         # self.request
         self.response_cookies = response.cookies

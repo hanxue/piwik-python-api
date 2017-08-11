@@ -47,6 +47,7 @@ class TrackerBaseTestCase(PiwikAPITestCase):
         }
         self.request = FakeRequest(headers)
         self.pt = PiwikTracker(self.settings['PIWIK_SITE_ID'], self.request)
+        self.pt.enable_request_debug()
         self.pt.set_api_url(self.settings['PIWIK_TRACKING_API_URL'])
         self.pt.set_custom_variable(
             1,
@@ -288,6 +289,7 @@ class TrackerClassTestCase(TrackerBaseTestCase):
     def test_missing_api_url(self):
         try:
             pt = PiwikTracker(self.settings['PIWIK_SITE_ID'], self.request)
+            pt.enable_request_debug()
             pt.do_track_page_view('fake title')
             invalid_config = True
         except ConfigurationError:

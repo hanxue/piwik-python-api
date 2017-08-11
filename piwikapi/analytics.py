@@ -7,12 +7,14 @@ License: BSD, see LICENSE for details
 Source and development at https://github.com/piwik/piwik-python-api
 """
 
+import requests
+import logging
 try:
-    from urllib.request import Request, urlopen
-    from urllib.parse import urlencode
+    import http.client as http_client
 except ImportError:
-    from urllib2 import Request, urlopen
-    from urllib import urlencode
+    # Python 2
+    import httplib as http_client
+http_client.HTTPConnection.debuglevel = 1
 
 from .exceptions import ConfigurationError
 
@@ -30,6 +32,21 @@ class PiwikAnalytics(object):
         self.p = {}
         self.set_parameter('module', 'API')
         self.api_url = None
+        self.request_debug = False
+
+    def enable_request_debug(self):
+        """
+        Enable detailed logging from Python Requests
+        :rtype: None
+        """
+        self.request_debug = True
+
+    def disable_request_debug(self):
+        """
+        Disable detailed logging from Python Requests
+        :rtype: None
+        """
+        self.request_debug = False
 
     def set_parameter(self, key, value):
         """
@@ -154,7 +171,12 @@ class PiwikAnalytics(object):
 
         :rtype: str
         """
-        request = Request(self.get_query_string())
-        response = urlopen(request)
-        body = response.read()
-        return body
+        if self.request_debug:
+            logging.basicConfig()
+            logging.getLogger().setLevel(logging.DEBUG)
+            requests_log = logging.getLogger("requests.packages.urllib3")
+            requests_log.setLevel(logging.DEBUG)
+            requests_log.propagate = True
+
+        response = requests.get(self.api_url, params=self.p)
+        return response.text
