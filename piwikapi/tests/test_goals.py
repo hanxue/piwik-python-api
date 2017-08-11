@@ -4,7 +4,7 @@ except ImportError:
     import simplejson as json
 
 from piwikapi.plugins.goals import PiwikGoals
-from ecommerce import TrackerEcommerceBaseTestCase
+from test_ecommerce import TrackerEcommerceBaseTestCase
 
 
 class GoalsTestCase(TrackerEcommerceBaseTestCase):

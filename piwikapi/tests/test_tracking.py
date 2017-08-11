@@ -18,7 +18,7 @@ from piwikapi.exceptions import ConfigurationError
 from piwikapi.tracking import PiwikTracker
 from piwikapi.tracking import PiwikTrackerEcommerce
 
-from analytics import AnalyticsBaseTestCase
+from test_analytics import AnalyticsBaseTestCase
 from base import PiwikAPITestCase
 from request import FakeRequest
 
@@ -175,8 +175,9 @@ class TrackerClassTestCase(TrackerBaseTestCase):
             "Could not set a correct ID, %s" % incorrect_id
         )
 
-    def test_append_debug_dict(self):
-        self.pt.append_debug_dict({'debug':'suffix'})
+    def test_set_debug_string_append(self):
+        suffix = 'suffix'
+        self.pt.set_debug_string_append(suffix)
         query_url = self.pt._get_request('foo')
         self.assertRegexpMatches(
             query_url,

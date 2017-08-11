@@ -15,7 +15,7 @@ except ImportError:
 from piwikapi.tracking import PiwikTrackerEcommerce
 from piwikapi.plugins.goals import PiwikGoals
 
-from tracking import TrackerVerifyBaseTestCase
+from test_tracking import TrackerVerifyBaseTestCase
 
 
 class TrackerEcommerceBaseTestCase(TrackerVerifyBaseTestCase):
