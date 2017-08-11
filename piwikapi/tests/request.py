@@ -26,6 +26,8 @@ class FakeRequest:
         self.META = headers
         if self.META['HTTPS']:
             self.secure = True  # TODO test this..
+        if self.headers['HTTP_REFERER']:
+            self.url = self.headers['HTTP_REFERER']
 
     def is_secure(self):
         """
