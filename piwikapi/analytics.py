@@ -148,22 +148,18 @@ class PiwikAnalytics(object):
         """
         self.set_parameter('segment', segment)
 
-    def get_query_string(self):
+    def get_parameters(self):
+        return self.p
+
+    def get_api_url(self):
         """
-        Return the query string
+        Return the API URL
 
         :raises: ConfigurationError if the API URL was not set
         :rtype: str
         """
         if self.api_url is None:
             raise ConfigurationError("API URL not set")
-        if self.p:
-            qs = self.api_url
-            qs += '?'
-            qs += urlencode(self.p)
-        else:
-            pass
-        return qs
 
     def send_request(self):
         """

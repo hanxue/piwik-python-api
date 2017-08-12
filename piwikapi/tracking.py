@@ -734,13 +734,12 @@ class PiwikTracker(object):
         """
         if not self.api_url:
             raise ConfigurationError('API URL not set')
-        request = Request(self.api_url, params=params)
         headers = {
                     'Accept-Language': self.accept_language,
                     'User-Agent': self.user_agent,
                     }
         if self.cookie_support:
-            pass
+            cookies = self.request_cookie
         else:
             cookies = None
         #TODO: Reimplement cookies support

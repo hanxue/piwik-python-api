@@ -5,12 +5,7 @@ try:
     import json
 except ImportError:
     import simplejson as json
-try:
-    from urllib.request import Request, urlopen
-    from urllib.parse import urlencode, quote
-except ImportError:
-    from urllib2 import Request, urlopen
-    from urllib import urlencode, quote
+import requests
 
 from piwikapi.tracking import PiwikTrackerEcommerce
 from piwikapi.plugins.goals import PiwikGoals
@@ -73,10 +68,7 @@ class TrackerEcommerceBaseTestCase(TrackerVerifyBaseTestCase):
         Get a custom variable from the last visit
         """
         try:
-            if sys.version_info[0] >= 3:
-                data = json.loads(self.a.send_request().decode('utf-8'))[-1]['actionDetails'][0]['customVariables']
-            else:
-                data = json.loads(self.a.send_request())[-1]['actionDetails'][0]['customVariables']
+            data = json.loads(self.a.send_request())[-1]['actionDetails'][0]['customVariables']
         except IndexError:
             print("Request apparently not logged!")
             raise
@@ -91,7 +83,7 @@ class TrackerEcommerceVerifyTestCase(TrackerEcommerceBaseTestCase):
     def test_ecommerce_view(self):
         # View a product
         product = self.products['book']
-        script = "/view/%s/" % quote(product['name'])
+        script = "/view/%s/" % product['name']
         self.pte._set_script(script)
         self.pte.set_ecommerce_view(
             product['sku'],

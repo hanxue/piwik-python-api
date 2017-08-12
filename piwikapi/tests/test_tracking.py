@@ -337,8 +337,8 @@ class TrackerVerifyDebugTestCase(TrackerBaseTestCase):
         action_title = self.get_title('test default action url')
         r = self.pt.do_track_page_view(action_title)
         url = 'Action URL = http://%s%s?%s' % (
-            self.request.META.get('SERVER_NAME'),
-            self.request.META.get('PATH_INFO'),
+            self.request.headers['SERVER_NAME'],
+            self.request.headers['PATH_INFO'],
             cgi.escape(self.request.META['QUERY_STRING']),
         )
         self.assertRegexpMatches(
@@ -387,7 +387,7 @@ class TrackerVerifyDebugTestCase(TrackerBaseTestCase):
         or overridden just because we authenticated, Piwik should log the IP
         of the host that made the tracking request.
         """
-        ip = self.request.META['REMOTE_ADDR']
+        ip = self.request.headers['REMOTE_ADDR']
         title = self.get_title('test ip (auth) %s' % ip)
         self.pt.set_token_auth(self.settings['PIWIK_TOKEN_AUTH'])
 
@@ -479,10 +479,8 @@ class TrackerVerifyBaseTestCase(TrackerBaseTestCase, AnalyticsBaseTestCase):
         """
         try:
             self.a.set_parameter('token_auth', self.settings['PIWIK_TOKEN_AUTH'])
-            if sys.version_info[0] >= 3:
-                data = json.loads(self.a.send_request().decode('utf-8'))
-            else:
-                data = json.loads(self.a.send_request())
+            print("DEBUG: gev_v() output: ", self.a.send_request())
+            data = json.loads(self.a.send_request())
             data = data[-1]
         except IndexError:
             print("Request apparently not logged!")
@@ -503,10 +501,7 @@ class TrackerVerifyBaseTestCase(TrackerBaseTestCase, AnalyticsBaseTestCase):
         """
         try:
             self.a.set_parameter('token_auth', self.settings['PIWIK_TOKEN_AUTH'])
-            if sys.version_info[0] >= 3:
-                data = json.loads(self.a.send_request().decode('utf-8'))[-1]['actionDetails'][0]
-            else:
-                data = json.loads(self.a.send_request())[-1]['actionDetails'][0]
+            data = json.loads(self.a.send_request())[-1]['actionDetails'][0]
         except IndexError:
             print("Request apparently not logged!")
             raise
@@ -568,10 +563,7 @@ class TrackerVerifyTestCase(TrackerVerifyBaseTestCase):
         url = 'http://out.example.com/out/15'
         r = self.pt.do_track_action(url, 'link')
         self.a.set_parameter('token_auth', self.settings['PIWIK_TOKEN_AUTH'])
-        if sys.version_info[0] >= 3:
-            data = json.loads(self.a.send_request().decode('utf-8'))[0]
-        else:
-            data = json.loads(self.a.send_request())[0]
+        data = json.loads(self.a.send_request())[0]
         self.assertEqual(
             url,
             self.get_av('url'),

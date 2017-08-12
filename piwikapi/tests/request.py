@@ -10,7 +10,7 @@ class FakeRequest:
 
     #: HTTP headers like in the PHP $_SERVER variable, see
     #: http://php.net/manual/en/reserved.variables.server.php
-    META = {}
+    headers = {}
 
     #: Cookies... work in progress
     COOKIES = False
@@ -19,12 +19,12 @@ class FakeRequest:
         """
         Configure request object according to the headers we get
 
-        :param headers: see META
+        :param headers: See http://www.python-requests.org/en/master/
         :type headers: dict
         :rtype: None
         """
-        self.META = headers
-        if self.META['HTTPS']:
+        self.headers = headers
+        if self.headers['HTTPS']:
             self.secure = True  # TODO test this..
         if self.headers['HTTP_REFERER']:
             self.url = self.headers['HTTP_REFERER']
