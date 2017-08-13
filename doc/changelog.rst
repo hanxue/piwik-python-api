@@ -1,6 +1,18 @@
 Changelog
 =========
 
+0.4.0-drred (2017-08-13)
+------------------------
+
+- Replace urllib with Python Requests
+- Add debugging output for running tests
+- Add `url` attribute to FakeRequest class, to fix failing test
+- Refactoring: Rename the test unit files to have test_ prefix
+- Refactoring: Change set_debug_string_append to accept dictionary instead
+- Refactoring: Replace md5 with more secure way to generate random string
+
+
+
 0.3.1-drred (2017-08-08)
 ----------------
 - Variable tracking support
@@ -55,3 +67,26 @@ TODO
 - TODO: ImageGraph plugin
 - TODO: UserCountry plugin
 - TODO: VisitsSummary plugin
+- Fix Failing tests
+
+- test_missing_api_url
+- Just a basic test to see if we can get an image
+- Test add_ecommerce_item() together with do_track_ecommerce_cart_update(). 
+ Also make sure that an abandoned cart was logged.
+- test_ecommerce_view
+- TODO We could test that each product was added, not only the sums
+- Make sure goal conversions are logged
+- test_set_debug_string_append
+- test_default_action_title_is_correct
+- test_default_action_url_is_correct
+- This test can't fail, we use IPs from testing networks
+- test_default_repeat_visits_recognized
+- test_set_visitor_id
+- test_setting_ip_works_for_authed_user_only
+- test_token_auth_succeeds
+- Test download action
+- Test out action
+- Piwik doesn't save the UA string but processes it.
+- test_set_visitor_feature_plugins
+- test_set_visitor_feature_resolution
+- test_set_visitor_feature_single_plugin

@@ -1,9 +1,9 @@
-from distutils.core import setup
+from setuptools import setup
 
 
 setup(
     name = "piwikapi-drred",
-    version = "0.3.1",
+    version = "0.4.0",
     packages = (
         'piwikapi',
         'piwikapi.plugins',

@@ -57,7 +57,7 @@ copyright = u'2012-2013, Nicolas Kuttler. 2017, DrRed'
 # built documents.
 #
 # The short X.Y version.
-version = '0.3.1-drred'
+version = '0.4.0-drred'
 # The full version, including alpha/beta/rc tags.
 release = version
 
