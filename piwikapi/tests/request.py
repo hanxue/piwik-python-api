@@ -1,4 +1,12 @@
-class FakeRequest:
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+
+class FakeRequest(object):
     """
     A replacement for Django's Request object. This is only used for unit
     tests at the moment. If you're not using Django and need to create such

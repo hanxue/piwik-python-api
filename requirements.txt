@@ -1,1 +1,2 @@
 sphinxcontrib-fulltoc
+future==0.16.0
