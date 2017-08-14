@@ -1,16 +1,19 @@
 Changelog
 =========
 
+0.4.1-drred (2017-08-14)
+------------------------
+- Use futures for Python 3 compatibility
+- Update requirements.txt with required packages
+
 0.4.0-drred (2017-08-13)
 ------------------------
-
 - Replace urllib with Python Requests
 - Add debugging output for running tests
 - Add `url` attribute to FakeRequest class, to fix failing test
 - Refactoring: Rename the test unit files to have test_ prefix
 - Refactoring: Change set_debug_string_append to accept dictionary instead
 - Refactoring: Replace md5 with more secure way to generate random string
-
 
 
 0.3.1-drred (2017-08-08)

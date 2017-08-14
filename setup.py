@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name = "piwikapi-drred",
-    version = "0.4.0",
+    version = "0.4.1",
     packages = (
         'piwikapi',
         'piwikapi.plugins',
@@ -12,8 +12,8 @@ setup(
     #test_suite = 'piwikapi.tests',
 
     # PyPI
-    author = "Nicolas Kuttler",
-    author_email = "pypi@kuttler.eu",
+    author = "Nicolas Kuttler, Hanxue Lee",
+    author_email = "pypi@kuttler.eu, hanxue@users.noreply.github.com",
     description = "Python Piwik API",
     license = "BSD",
     long_description = open("README.rst").read(),
